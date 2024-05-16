@@ -6,16 +6,18 @@ import time
 import threading
 import pytz
 
-bot = telebot.TeleBot('6721466990:AAENDVKINfkfMZA-C005GWkwr5JUcATRkds')
+bot = telebot.TeleBot('ВАШ ТОКЕН')
 
 stop_loop = {}
 work = 0
 rest = 0
 
+
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, text='Привет! Я чат-бот, который поможет тебе организовать рабочий процесс! \n'
                                            'Скорее вводи команду /work и мы начнем работу.')
+
 
 @bot.message_handler(commands=['work'])
 def work_message(message):
@@ -34,6 +36,7 @@ def work_message(message):
                                       '2. 25 минут работы - 5 минут отдыха; \n'
                                       '3. 45 минут работы - 15 минут отдыха.',
                      parse_mode='Markdown', reply_markup=markup)
+
 
 @bot.callback_query_handler(func=lambda call: True)
 def query_handler(call):
@@ -58,13 +61,14 @@ def query_handler(call):
     work_thread = threading.Thread(target=pomodoro_clock, args=(call.message.chat.id, work, rest))
     work_thread.start()
 
+
 def pomodoro_clock(chat_id, work, rest):
-  moscow_tz = pytz.timezone('Europe/Moscow')
-  now = datetime.datetime.now().astimezone(moscow_tz)
-  text_now = now.strftime('%H:%M')
-  bot.send_message(chat_id, f'Начинаем работать в {text_now}')
-  n = 0
-  while True:
+    moscow_tz = pytz.timezone('Europe/Moscow')
+    now = datetime.datetime.now().astimezone(moscow_tz)
+    text_now = now.strftime('%H:%M')
+    bot.send_message(chat_id, f'Начинаем работать в {text_now}')
+    n = 0
+    while True:
       work_delta = timedelta(minutes = (work+rest) * n + work)
       rest_time = (now + work_delta).strftime('%H:%M')
       rest_delta = timedelta(minutes = (work+rest) * n + (work+rest))
@@ -81,12 +85,14 @@ def pomodoro_clock(chat_id, work, rest):
       if stop_loop.get(chat_id):
           break
 
+
 def custom_sleep(chat_id, sec):
     start = time.time()
     while time.time() - start < sec:
         if stop_loop.get(chat_id):
             break
         pass  # Активное ожидание
+
 
 @bot.message_handler(commands=['info'])
 def info_message(message):
@@ -96,6 +102,7 @@ def info_message(message):
                  'и коротких перерывов. В классической технике отрезки времени — «помидоры» длятся полчаса: '
                  '25 минут работы и 5 минут отдыха.')
     bot.reply_to(message, f'*Что же это за помидоры?* \n {info_text}', parse_mode='Markdown')
+
 
 @bot.message_handler(commands=['help'])
 def help_message(message):
@@ -108,6 +115,7 @@ def help_message(message):
                  '/stop - остановить рабочий процесс')
     bot.reply_to(message, help_text)
 
+
 @bot.message_handler(commands=['stop'])
 def stop_loop_handler(message):
     chat_id = message.chat.id
@@ -115,10 +123,5 @@ def stop_loop_handler(message):
     stop_loop[chat_id] = True
     bot.send_message(chat_id, "Поработали достаточно.")
 
+
 bot.polling(none_stop=True)
-
-
-# markup2 = types.InlineKeyboardMarkup()
-# continue_btn = types.InlineKeyboardButton(text="Продолжить", callback_data='1')
-# stop_btn = types.InlineKeyboardButton(text="Остановиться", callback_data='2')
-# bot.send_message(message.chat.id, "Что дальше?", reply_markup=markup2)
