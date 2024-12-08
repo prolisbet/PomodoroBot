@@ -5,8 +5,9 @@ from datetime import timedelta
 import time
 import threading
 import pytz
+from config import BOT_TOKEN
 
-bot = telebot.TeleBot('ВАШ ТОКЕН')
+bot = telebot.TeleBot(BOT_TOKEN)
 
 stop_loop = {}
 work = 0
